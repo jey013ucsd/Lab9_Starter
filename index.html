@@ -47,6 +47,14 @@
       width: 122px;
     }
   </style>
+
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "2a79827a5fc84cc2af261f9785cd2820"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
 </head>
 
 <body>
@@ -88,6 +96,25 @@
   </main>
 
   <script>
+    
+    window.onerror = function(message, source, lineno, colno, error) {
+      console.error('Global error caught:', {
+        message,
+        source,
+        lineno,
+        colno,
+        error
+      });
+      return true;
+    };
+
+    class InputError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'InputError';
+      }
+    }
+    
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,13 +122,134 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      try {
+        if (firstNum === '' || secondNum === '') {
+          throw new InputError('Both input fields must be filled.');
+        } 
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch (err) {
+        if (err instanceof InputError) {
+          console.error('InputError caught:', err.message);
+          output.textContent = 'Error: ' + err.message;
+        } else {
+          console.error('Unexpected error:', err);
+          output.textContent = 'Unexpected Error';
+        }
+      } finally {
+        console.log('Calculation attempt completed.');
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
     // You may move this JS to another file if you wish
+    // Retrieve references to all buttons in the #error-btns section
+    let [
+      logBtn,
+      errorBtn,
+      countBtn,
+      warnBtn,
+      assertBtn,
+      clearBtn,
+      dirBtn,
+      dirxmlBtn,
+      groupStartBtn,
+      groupEndBtn,
+      tableBtn,
+      startTimerBtn,
+      endTimerBtn,
+      traceBtn,
+      globalErrorBtn
+    ] = errorBtns;
+
+
+    logBtn.addEventListener('click', () => {
+      let firstNum = document.querySelector('#first-num').value;
+      console.log('Console.log demo:', { firstNum });
+    });
+
+    errorBtn.addEventListener('click', () => {
+      console.error('Console.error demo: an error occurred');
+    });
+
+    countBtn.addEventListener('click', () => {
+      console.count('countDemo');
+    });
+
+    warnBtn.addEventListener('click', () => {
+      let secondNum = document.querySelector('#second-num').value;
+      console.warn('Console.warn demo:', { secondNum });
+    });
+
+    assertBtn.addEventListener('click', () => {
+      let firstNum = document.querySelector('#first-num').value;
+      console.assert(firstNum === '3', 'Console.assert demo: assertion failed');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      console.clear();
+    });
+
+    dirBtn.addEventListener('click', () => {
+      let firstNum = document.querySelector('#first-num').value;
+      let secondNum = document.querySelector('#second-num').value;
+      const data = { firstNum: firstNum, secondNum: secondNum};
+      console.dir(data);
+    });
+
+    dirxmlBtn.addEventListener('click', () => {
+      const mainElement = document.querySelector('main');
+      console.dirxml(mainElement);
+    });
+
+    groupStartBtn.addEventListener('click', () => {
+      console.group('Demo Group');
+      console.log('Grouped message 1');
+      console.log('Grouped message 2');
+    });
+
+    groupEndBtn.addEventListener('click', () => {
+      console.groupEnd();
+    });
+
+    tableBtn.addEventListener('click', () => {
+      let firstNum = document.querySelector('#first-num').value;
+      let secondNum = document.querySelector('#second-num').value;
+
+      const tableDemo = [
+        { field: 'firstNum', value: firstNum },
+        { field: 'secondNum', value: secondNum },
+      ];
+      console.table(tableDemo);
+    });
+
+    startTimerBtn.addEventListener('click', () => {
+      console.time('DemoTimer');
+    });
+
+    endTimerBtn.addEventListener('click', () => {
+      console.timeEnd('DemoTimer');
+    });
+
+    traceBtn.addEventListener('click', () => {
+      function levelOne() {
+        levelTwo();
+      }
+      function levelTwo() {
+        levelThree();
+      }
+      function levelThree() {
+        console.trace('Console.trace demo');
+      }
+      levelOne();
+    });
+
+    globalErrorBtn.addEventListener('click', () => {
+      nonExistentFunction(); 
+    });
+
   </script>
 </body>
 
